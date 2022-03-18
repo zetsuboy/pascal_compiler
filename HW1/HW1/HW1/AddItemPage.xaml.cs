@@ -19,12 +19,23 @@ namespace HW1
 
         private void ButtonBaikal_Clicked(object sender, EventArgs e)
         {
-            MainPage.items.Add(new Item("Baikal", 1));
+            IncreaseItem("Baikal");
         }
 
         private void ButtonColaCola_Clicked(object sender, EventArgs e)
         {
-            MainPage.items.Add(new Item("Cola Cola", 1));
+            IncreaseItem("Cola");
+        }
+
+        private void IncreaseItem(string name)
+        {
+            int count = 1;
+            MainPage.items.Where(x => x.item_name == name).ToList().ForEach(x => 
+            {
+                count = ++x.item_count;
+                MainPage.items.Remove(x);   
+            });
+            MainPage.items.Add(new Item(name, count));
         }
     }
 }

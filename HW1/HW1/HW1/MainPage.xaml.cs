@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace HW1
 {
     public class Item
     {
+
         public Item(string item_name, int item_count)
         {
             this.item_name = item_name;
@@ -25,6 +21,11 @@ namespace HW1
         public int item_count
         {
             get; set;
+        }
+
+        public void UpdateCount(int newCount)
+        {
+            item_count = newCount;
         }
     }
 
