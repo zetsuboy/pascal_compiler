@@ -12,6 +12,7 @@ namespace HW1
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class AddItemPage : ContentPage
     {
+        private static int id = 0;
         public AddItemPage()
         {
             InitializeComponent();
@@ -35,7 +36,7 @@ namespace HW1
                 count = ++x.item_count;
                 MainPage.items.Remove(x);   
             });
-            MainPage.items.Add(new Item(name, count));
+            MainPage.items.Add(new Item(name, count, id++));
         }
     }
 }
