@@ -12,14 +12,18 @@
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="40"/> 
-                                <ColumnDefinition Width="9*"/> 
-                                <ColumnDefinition Width="1*"/> 
+                                <ColumnDefinition Width="8*"/> 
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
                             <Image Grid.Column="0" BackgroundColor="red" HeightRequest="40"
                                    WidthRequest="40"></Image>
-                            <Label Grid.Column="1" Text="{Binding item_name}" FontSize="Medium"
+                            <Label Grid.Column="1" VerticalOptions="Center" Text="{Binding item_name}" FontSize="Medium"
                                    HorizontalOptions="FillAndExpand"/>
-                            <Label Grid.Column="2" Text="{Binding item_count}" FontSize="Medium" />
+                            <Label Grid.Column="2" VerticalOptions="Center" Text="{Binding item_count}" FontSize="Medium" />
+                            <Button Clicked="Button_Clicked_1"  Grid.Column="3" Text="X" ClassId="{Binding item_id}"/>
+
+
                         </Grid>
                     </Frame>
                 </DataTemplate>
