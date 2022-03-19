@@ -16,27 +16,37 @@ namespace HW1
         public AddItemPage()
         {
             InitializeComponent();
-        }
-
-        private void ButtonBaikal_Clicked(object sender, EventArgs e)
-        {
-            IncreaseItem("Baikal");
-        }
-
-        private void ButtonColaCola_Clicked(object sender, EventArgs e)
-        {
-            IncreaseItem("Cola");
-        }
-
-        private void IncreaseItem(string name)
-        {
-            int count = 1;
-            MainPage.items.Where(x => x.item_name == name).ToList().ForEach(x => 
+            drinks.ItemsSource = new List<string>()
             {
-                count = ++x.item_count;
-                MainPage.items.Remove(x);   
+                "Baikal",
+                "Coca-cola"
+            };
+        }
+
+
+        private void IncreaseItem(string name, int count = 1)
+        {
+            MainPage.items.Where(x => x.item_name == name).ToList().ForEach(x =>
+            {
+                count += x.item_count;
+                MainPage.items.Remove(x);
             });
             MainPage.items.Add(new Item(name, count, id++));
+        }
+
+        private void Button_Order(object sender, EventArgs e)
+        {
+            IncreaseItem(drinks.SelectedItem.ToString(), Int32.Parse(count.Text));
+        }
+
+        private void Button_Minus(object sender, EventArgs e)
+        {
+            count.Text = ((Int32.Parse(count.Text)) - 1).ToString();
+        }
+
+        private void Button_Plus(object sender, EventArgs e)
+        {
+            count.Text = ((Int32.Parse(count.Text)) + 1).ToString();
         }
     }
 }
