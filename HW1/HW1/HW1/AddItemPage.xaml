@@ -5,8 +5,15 @@
              Title="Add new item">
     <ContentPage.Content>
         <StackLayout>
-            <Button Text="Add baikal" Clicked="ButtonBaikal_Clicked"></Button>
-            <Button Text="Add Coca-Cola" Clicked="ButtonColaCola_Clicked"></Button>
+            <Image Background="red" WidthRequest="40" HeightRequest="40" HorizontalOptions="Center"></Image>
+            <Picker x:Name="drinks" Title="Choose drink"/>
+            <StackLayout Orientation="Horizontal">
+                <Editor x:Name="count" Placeholder="Enter count" Keyboard="Numeric"/>
+                <Button Text="-" Clicked="Button_Minus"/>
+                <Button Text="+" Clicked="Button_Plus"/>
+            </StackLayout>
+
+            <Button Text="Order" Clicked="Button_Order"/>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
