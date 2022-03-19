@@ -22,8 +22,6 @@
                                    HorizontalOptions="FillAndExpand"/>
                             <Label Grid.Column="2" VerticalOptions="Center" Text="{Binding item_count}" FontSize="Medium" />
                             <Button Clicked="Button_Clicked_1"  Grid.Column="3" Text="X" ClassId="{Binding item_id}"/>
-
-
                         </Grid>
                     </Frame>
                 </DataTemplate>

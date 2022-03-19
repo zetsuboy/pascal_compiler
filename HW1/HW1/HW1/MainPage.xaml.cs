@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Xamarin.Forms;
 
 namespace HW1
 {
     public class Item
     {
+        private static int lastId = 0;
 
-        public Item(string item_name, int item_count, int item_id)
+        public Item() 
         {
-            this.item_name = item_name;
-            this.item_count = item_count;
-            this.item_id = item_id;
+            lastId++;
+            item_id = lastId;
         }
-
         public string item_name
         {
             get; set;
@@ -26,7 +26,7 @@ namespace HW1
 
         public int item_id
         {
-            get; set;
+            get;
         }
 
 
@@ -38,7 +38,7 @@ namespace HW1
 
     public partial class MainPage : ContentPage
     {
-        public static ObservableCollection<Item> items = new ObservableCollection<Item>();
+        public ObservableCollection<Item> items = new ObservableCollection<Item>();
 
         public MainPage()
         {
@@ -49,7 +49,21 @@ namespace HW1
 
         private void Button_Clicked(object sender, EventArgs e)
         {
-            Navigation.PushAsync(new AddItemPage());
+            var itemPage = new AddItemPage();
+            itemPage.Disappearing += (_, __) => {
+                var selectedItem = itemPage.selectedItem;
+                items.Where(x => x.item_name == selectedItem.Name).ToList().ForEach(x =>
+                {
+                    selectedItem.Count += x.item_count;
+                    items.Remove(x);
+                });
+                items.Add(new Item()
+                {
+                    item_name = selectedItem.Name,
+                    item_count = selectedItem.Count
+                });
+            };
+            Navigation.PushAsync(itemPage);
         }
 
         private void Button_Clicked_1(object sender, EventArgs e)
@@ -59,7 +73,7 @@ namespace HW1
             {
                 if(i.item_id.ToString() == button.ClassId)
                 {
-                    MainPage.items.Remove(i);
+                    items.Remove(i);
                     break;
                 }
                 

@@ -8,7 +8,7 @@
             <Image Background="red" WidthRequest="40" HeightRequest="40" HorizontalOptions="Center"></Image>
             <Picker x:Name="drinks" Title="Choose drink"/>
             <StackLayout Orientation="Horizontal">
-                <Editor x:Name="count" Placeholder="Enter count" Keyboard="Numeric"/>
+                <Editor x:Name="count" TextChanged="count_TextChanged" Text="1" Placeholder="Enter count" Keyboard="Numeric"/>
                 <Button Text="-" Clicked="Button_Minus"/>
                 <Button Text="+" Clicked="Button_Plus"/>
             </StackLayout>
