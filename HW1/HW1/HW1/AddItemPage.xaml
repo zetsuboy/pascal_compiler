@@ -5,8 +5,8 @@
              Title="Add new item">
     <ContentPage.Content>
         <StackLayout>
-            <Image Background="red" WidthRequest="40" HeightRequest="40" HorizontalOptions="Center"></Image>
-            <Picker x:Name="drinks" Title="Choose drink"/>
+            <Image x:Name="img" Source="Cola.png" WidthRequest="300" HeightRequest="300" HorizontalOptions="Center"></Image>
+            <Picker x:Name="drinks" Title="Choose drink" SelectedIndexChanged="drinks_SelectedIndexChanged"/>
             <StackLayout Orientation="Horizontal">
                 <Editor x:Name="count" TextChanged="count_TextChanged" Text="1" Placeholder="Enter count" Keyboard="Numeric"/>
                 <Button Text="-" Clicked="Button_Minus"/>
