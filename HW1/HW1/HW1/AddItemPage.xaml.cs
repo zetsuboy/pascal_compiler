@@ -15,20 +15,23 @@ namespace HW1
         private const int max_limit = 100;
         private const int min_limit = 1;
 
-        private SortedDictionary<string, string> drinksDependences = new SortedDictionary<string, string>()
+        class ItemDescription
         {
-            {"Coca-cola", "Cola.jpg"},
-            {"Baikal", "Baikal.jpg"}
-        };
-        public struct SelectedItem
-        {
-            public string Name;
-            public int Count;
+            public string Image { get; set; }
+            public string Description { get; set; }
         }
-        public SelectedItem? selectedItem
+
+        private SortedDictionary<string, ItemDescription> drinksDependences = new SortedDictionary<string, ItemDescription>()
+        {
+            { "Coca-cola", new ItemDescription() { Image = "Cola.jpg", Description = "Пендоская кола"} },
+            { "Baikal", new ItemDescription() { Image = "Baikal.jpg", Description = "Русская кола"} }
+        };
+
+        public Item SelectedItem
         {
             get; private set;
         } = null;
+
         public AddItemPage()
         {
             InitializeComponent();
@@ -39,9 +42,10 @@ namespace HW1
 
         private void IncreaseItem(string name, int count = 1)
         {
-            selectedItem = new SelectedItem() { 
-                Name = name, 
-                Count = count 
+            SelectedItem = new Item() { 
+                item_name = name, 
+                item_count = count,
+                item_image = drinksDependences[name].Image
             };
         }
 
@@ -88,7 +92,8 @@ namespace HW1
 
         private void drinks_SelectedIndexChanged(object sender, EventArgs e)
         {
-            img.Source = drinksDependences[drinks.SelectedItem.ToString()];
+            img.Source = drinksDependences[drinks.SelectedItem.ToString()].Image;
+            item_description.Text = drinksDependences[drinks.SelectedItem.ToString()].Description;
         }
     }
 }

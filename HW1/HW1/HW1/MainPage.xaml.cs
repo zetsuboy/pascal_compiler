@@ -1,40 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace HW1
 {
-    public class Item
-    {
-        private static int lastId = 0;
-
-        public Item() 
-        {
-            lastId++;
-            item_id = lastId;
-        }
-        public string item_name
-        {
-            get; set;
-        }
-        
-        public int item_count
-        {
-            get; set;
-        }
-
-        public int item_id
-        {
-            get;
-        }
-
-
-        public void UpdateCount(int newCount)
-        {
-            item_count = newCount;
-        }
-    }
 
     public partial class MainPage : ContentPage
     {
@@ -51,19 +22,15 @@ namespace HW1
         {
             var itemPage = new AddItemPage();
             itemPage.Disappearing += (_, __) => {
-                if (itemPage.selectedItem != null)
+                if (itemPage.SelectedItem != null)
                 {
-                    var selectedItem = itemPage.selectedItem.Value;
-                    items.Where(x => x.item_name == selectedItem.Name).ToList().ForEach(x =>
+                    var selectedItem = itemPage.SelectedItem;
+                    items.Where(x => x.item_name == selectedItem.item_name).ToList().ForEach(x =>
                     {
-                        selectedItem.Count += x.item_count;
+                        selectedItem.item_count += x.item_count;
                         items.Remove(x);
                     });
-                    items.Add(new Item()
-                    {
-                        item_name = selectedItem.Name,
-                        item_count = selectedItem.Count
-                    });
+                    items.Add(selectedItem);
                 }
             };
             Navigation.PushAsync(itemPage);
@@ -80,6 +47,23 @@ namespace HW1
                     break;
                 }
                 
+            }
+        }
+
+        private async void OrderButton_Clicked(object sender, EventArgs e)
+        {
+            if (items.Count == 0)
+            {
+                await DisplayAlert("Order is empty", "Add item to order", "Ok");
+            }
+            else
+            {
+                var result = await DisplayAlert("Confirm", "Order description", "Agree", "Disagree");
+                if (result)
+                {
+                    items.Clear();
+                    await DisplayAlert("Successeful", "Order description", "Ok");
+                }
             }
         }
     }
