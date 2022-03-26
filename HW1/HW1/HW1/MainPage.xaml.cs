@@ -51,17 +51,20 @@ namespace HW1
         {
             var itemPage = new AddItemPage();
             itemPage.Disappearing += (_, __) => {
-                var selectedItem = itemPage.selectedItem;
-                items.Where(x => x.item_name == selectedItem.Name).ToList().ForEach(x =>
+                if (itemPage.selectedItem != null)
                 {
-                    selectedItem.Count += x.item_count;
-                    items.Remove(x);
-                });
-                items.Add(new Item()
-                {
-                    item_name = selectedItem.Name,
-                    item_count = selectedItem.Count
-                });
+                    var selectedItem = itemPage.selectedItem.Value;
+                    items.Where(x => x.item_name == selectedItem.Name).ToList().ForEach(x =>
+                    {
+                        selectedItem.Count += x.item_count;
+                        items.Remove(x);
+                    });
+                    items.Add(new Item()
+                    {
+                        item_name = selectedItem.Name,
+                        item_count = selectedItem.Count
+                    });
+                }
             };
             Navigation.PushAsync(itemPage);
         }

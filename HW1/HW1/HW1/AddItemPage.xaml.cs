@@ -14,23 +14,25 @@ namespace HW1
     {
         private const int max_limit = 100;
         private const int min_limit = 1;
+
+        private SortedDictionary<string, string> drinksDependences = new SortedDictionary<string, string>()
+        {
+            {"Coca-cola", "Cola.jpg"},
+            {"Baikal", "Baikal.jpg"}
+        };
         public struct SelectedItem
         {
             public string Name;
             public int Count;
         }
-        public SelectedItem selectedItem 
+        public SelectedItem? selectedItem
         {
             get; private set;
-        }
+        } = null;
         public AddItemPage()
         {
             InitializeComponent();
-            drinks.ItemsSource = new List<string>()
-            {
-                "Baikal",
-                "Coca-cola"
-            };
+            drinks.ItemsSource = drinksDependences.Keys.ToList();
             drinks.SelectedIndex = 0;
         }
 
@@ -82,6 +84,11 @@ namespace HW1
                 count.Text = e.OldTextValue;
             }
             
+        }
+
+        private void drinks_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            img.Source = drinksDependences[drinks.SelectedItem.ToString()];
         }
     }
 }
