@@ -1,0 +1,83 @@
+uses
+        crt, sysutils, math;
+var
+        s, res_system : string;
+        iterator, o_iterator, ss : longint;
+        sum, counter, base : int64;
+        format, overflow : boolean;
+        numbers : string = '0123456789';
+        binary : string = '01';
+        octal : string = '01234567';
+        hexi : string = '0123456789abcdef';
+begin
+        clrscr;
+        readln(s);
+        s := LowerCase(s);
+        format := False;
+        iterator := 2;
+        counter := 1;
+        if s[iterator - 1] = '-' then
+                iterator := iterator + 1;
+        case s[iterator - 1] of
+                '$':
+                        begin
+                                res_system := hexi;
+                                base := 16;
+                        end;
+                '%':
+                        begin
+                                res_system := binary;
+                                base := 2;
+                        end;
+                '&':
+                        begin
+                                res_system := octal;
+                                base := 8;
+                        end;
+                else begin
+                        res_system := numbers;
+                        Dec(iterator);
+                        base := 10;
+                        end;
+        end;
+        if (iterator > Length(s)) then
+                format := True;
+        o_iterator := iterator;
+        if not TryStrToInt(s, ss) then
+                format := True;
+        {while o_iterator <= Length(s) do
+                begin
+                        if (pos(s[o_iterator], res_system) = 0) then
+                                begin
+                                        format := True;
+                                        break
+                                end;
+                        Inc(o_iterator);
+                end;}
+        if format then
+                writeln('1')
+        else
+                begin
+                        sum := 0;
+                        o_iterator := Length(s);
+                        while (o_iterator >= iterator) do
+                                begin
+                                        if (s[1] = '-') then
+                                                sum := sum - counter * (pos(s[o_iterator], res_system) - 1)
+                                        else
+                                                sum := sum + counter * (pos(s[o_iterator], res_system) - 1);
+                                        counter := counter * base;
+                                        Dec(o_iterator);
+                                        if ((sum > 2147483647) or (sum < -2147483648)) then
+                                                begin
+                                                        overflow := True;
+                                                        break;
+                                                end;
+                                end;
+                        if overflow then
+                                writeln('2')
+                        else
+                                writeln('0' + sLineBreak + IntToStr(sum));
+                end;
+        readln;
+end.

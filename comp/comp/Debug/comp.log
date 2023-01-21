@@ -1,0 +1,8 @@
+﻿  comp.cpp
+C:\Users\coolc\source\repos\comp\comp\Lexer.h(59,12): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\coolc\source\repos\comp\comp\Lexer.h(165,19): warning C4244: =: преобразование "__int64" в "double", возможна потеря данных
+C:\Users\coolc\source\repos\comp\comp\Parser.h(25,37): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\coolc\source\repos\comp\comp\Parser.h(34,15): warning C4018: >=: несоответствие типов со знаком и без знака
+C:\Users\coolc\source\repos\comp\comp\Parser.h(44,37): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\coolc\source\repos\comp\comp\Parser.h(53,15): warning C4018: >=: несоответствие типов со знаком и без знака
+  comp.vcxproj -> C:\Users\coolc\source\repos\comp\Debug\comp.exe
