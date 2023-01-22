@@ -205,7 +205,7 @@ int main() {
 	//Lexer s(argv[1]);
 	//l.readFile("tests/test5.txt");
 
-	Lexer s("tests/test5.txt");
+	Lexer s("tests/test1.txt");
 	std::vector<Lexem> lexes;
 	try {
 		lexes = s.getLexems();
@@ -218,8 +218,8 @@ int main() {
 		std::cout << l.line_id << "\t" << l.id << "\t" << l.TypeToString[(int)l.lex_type] << "\t" << l.default_value << "\t" << l.value << "\n";
 	}
 
-	SimpleParser parser(lexes);
-	parser.printBT();
+	Parser parser(lexes);
+	parser.analyze();
 
 	return 0;
 }

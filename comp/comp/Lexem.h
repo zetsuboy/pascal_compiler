@@ -6,10 +6,10 @@
 class Lexem {
 public:
 	enum class Type {
-		INTEGER_CONST, REAL_CONST, STRING_CONST, IDENTIFIER, DELIMITER, OPERATOR, WORD
+		INTEGER_CONST, REAL_CONST, STRING_CONST, IDENTIFIER, DELIMITER, OPERATOR, WORD, TYPE_SPEC
 	};
 
-	const std::string TypeToString[7] = { "Integer_const", "Real_const", "String_const", "Identifier", "Delimiter", "Operator", "Word" };
+	const std::string TypeToString[8] = { "Integer_const", "Real_const", "String_const", "Identifier", "Delimiter", "Operator", "Word" , "Type_spec"};
 
 	int id;
 	int line_id;
@@ -24,6 +24,12 @@ public:
 		value = other.value;
 		default_value = other.default_value;
 		return *this;
+	}
+
+	Lexem() {};
+
+	Lexem(std::string def_val) {
+		default_value = def_val;
 	}
 
 	Lexem(int _id, int _line_id, Type _lex_type, std::string _value) {

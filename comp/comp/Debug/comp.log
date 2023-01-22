@@ -5,4 +5,6 @@ C:\Users\coolc\source\repos\comp\comp\Parser.h(25,37): warning C4018: <: нес�
 C:\Users\coolc\source\repos\comp\comp\Parser.h(34,15): warning C4018: >=: несоответствие типов со знаком и без знака
 C:\Users\coolc\source\repos\comp\comp\Parser.h(44,37): warning C4018: <: несоответствие типов со знаком и без знака
 C:\Users\coolc\source\repos\comp\comp\Parser.h(53,15): warning C4018: >=: несоответствие типов со знаком и без знака
+C:\Users\coolc\source\repos\comp\comp\Parser.h(470,22): warning C4018: <: несоответствие типов со знаком и без знака
+C:\Users\coolc\source\repos\comp\comp\Parser.h(492): warning C4715: Parser::Expression: значение возвращается не при всех путях выполнения
   comp.vcxproj -> C:\Users\coolc\source\repos\comp\Debug\comp.exe

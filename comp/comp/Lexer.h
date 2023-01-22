@@ -32,14 +32,14 @@ private:
 		{"'", Lexem::Type::DELIMITER}, {".", Lexem::Type::DELIMITER}, {";", Lexem::Type::DELIMITER}, {",", Lexem::Type::DELIMITER},
 		{":", Lexem::Type::DELIMITER} };
 	std::map<std::string, Lexem::Type> OperatorToType = { {"+", Lexem::Type::OPERATOR}, {"-", Lexem::Type::OPERATOR}, {"*", Lexem::Type::OPERATOR},
-		{"/", Lexem::Type::OPERATOR}, {"=", Lexem::Type::OPERATOR}, {"!=", Lexem::Type::OPERATOR}, {"<", Lexem::Type::OPERATOR}, {"<=", Lexem::Type::OPERATOR},
+		{"/", Lexem::Type::OPERATOR}, {"=", Lexem::Type::OPERATOR}, {"<>", Lexem::Type::OPERATOR}, {"<", Lexem::Type::OPERATOR}, {"<=", Lexem::Type::OPERATOR},
 		{">", Lexem::Type::OPERATOR}, {">=", Lexem::Type::OPERATOR}, {":=", Lexem::Type::OPERATOR} };
 	std::map<std::string, Lexem::Type> WordToType = { {"begin", Lexem::Type::WORD}, {"end", Lexem::Type::WORD}, {"return", Lexem::Type::WORD},
 		{"program", Lexem::Type::WORD}, {"var", Lexem::Type::WORD}, {"const", Lexem::Type::WORD}, {"while", Lexem::Type::WORD},
 		{"do", Lexem::Type::WORD}, {"for", Lexem::Type::WORD}, {"range", Lexem::Type::WORD}, {"if", Lexem::Type::WORD}, {"then", Lexem::Type::WORD},
 		{"else", Lexem::Type::WORD}, {"and", Lexem::Type::WORD}, {"not", Lexem::Type::WORD}, {"or", Lexem::Type::WORD}, {"array", Lexem::Type::WORD},
-		{"function", Lexem::Type::WORD}, {"procedure", Lexem::Type::WORD}, {"integer", Lexem::Type::WORD},
-		{"double", Lexem::Type::WORD}, {"string", Lexem::Type::WORD} };
+		{"function", Lexem::Type::WORD}, {"procedure", Lexem::Type::WORD}, {"integer", Lexem::Type::TYPE_SPEC},
+		{"double", Lexem::Type::TYPE_SPEC}, {"string", Lexem::Type::TYPE_SPEC}, {"to", Lexem::Type::WORD}, {"downto", Lexem::Type::WORD} };
 	
 	int state = S;
 
