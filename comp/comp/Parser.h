@@ -7,6 +7,7 @@
 #include <map>
 #include "Node.h"
 #include "Lexem.h"
+#include "NodeFactory.h"
 
 class SimpleParser {
 private:
@@ -130,7 +131,8 @@ public:
 			tokenId++;
 		}
 		else {
-			throw std::runtime_error("Syntax error! Expected " + getCurLex().TypeToString[(int)type]);
+			throw std::runtime_error("Syntax error! Expected " + getCurLex().TypeToString[(int)type] + " at " + 
+				std::to_string(getCurLex().line_id) + ":" + std::to_string(getCurLex().id));
 		}
 	}
 
@@ -139,7 +141,8 @@ public:
 			tokenId++;
 		}
 		else {
-			throw std::runtime_error("Syntax error! Expected " + word);
+			throw std::runtime_error("Syntax error! Expected " + word + " at " +
+				std::to_string(getCurLex().line_id) + ":" + std::to_string(getCurLex().id));
 		}
 	}
 
@@ -150,31 +153,36 @@ public:
 		return lexems[tokenId + 1];
 	}
 
-	Node* analyze() {
-		Node* root = Program();
-		return root;
+	std::unique_ptr<Node> analyze() {
+		std::unique_ptr<Node> root = std::move(Program());
+		return std::move(root);
 	}
 
-	Node* Program() {
-		eat("program");
-		Lexem program_name = getCurLex();
+	std::unique_ptr<Node> Program() {
+		Lexem program_name;
+		if (getCurLex().value == "program") {
+			eat("program");
+			program_name = getCurLex();
+			eat(Lexem::Type::IDENTIFIER);
+			eat(";");
+		}
+		else {
+			program_name = { "UNKNOWN_NAME" };
+		}
 
-		eat(Lexem::Type::IDENTIFIER);
-		eat(";");
-
-		std::vector<Node*> functions;
+		std::vector<std::unique_ptr<Node>> functions;
 		while (getCurLex().value == "procedure" || getCurLex().value == "function") {
-			functions.emplace_back(FuncDef());
+			functions.emplace_back(std::move(FuncDef()));
 			eat(";");
 		}
 
-		Node* block = Block();
+		std::unique_ptr<Node> block = std::move(Block());
 		eat(".");
-		ProgramNode *prog = new ProgramNode(program_name, functions, block);
-		return prog;
+		program_name.lex_type = Lexem::Type::PROGRAM_NAME;
+		return NodeFactory::createNode(program_name, std::move(functions), std::move(block));
 	}
 
-	Node* FuncDef() {
+	std::unique_ptr<Node> FuncDef() {
 		Lexem funcLex = getCurLex();
 		if (funcLex.value == "procedure")
 			eat("procedure");
@@ -185,112 +193,109 @@ public:
 		eat(Lexem::Type::IDENTIFIER);
 		eat("(");
 
-		std::vector<Node*> params;
+		std::vector<std::unique_ptr<Node>> params;
 		while (getCurLex().value != ")") {
-			std::vector<VarDeclNode*> sup = VarDecl();
-			for (auto ptr : sup)
-				params.emplace_back(ptr);
-			if (getCurLex().value == ",")
-				eat(",");
+			std::vector<std::unique_ptr<Node>> sup = std::move(VarDecl());
+			for (auto &ptr : sup)
+				params.emplace_back(std::move(ptr));
+			if (getCurLex().value == ";")
+				eat(";");
 		}
 		eat(")");
 
-		Node* returnType;
+		std::unique_ptr<Node> returnType;
 		if (funcLex.value == "function") {
 			eat(":");
-			returnType = TypeSpec();
+			returnType = std::move(TypeSpec());
 		}
 		else {
 			Lexem typeLex = { "void" };
-			returnType = new TypeSpecNode(typeLex);
+			typeLex.lex_type = Lexem::Type::TYPE_SPEC;
+			returnType = NodeFactory::createNode(typeLex);
 		}
 		eat(";");
-		Node* body = Block();
+		std::unique_ptr<Node> body = std::move(Block());
 
-		FunctionNode* node = new FunctionNode(name, params, returnType, body);
-		return node;
+		name.lex_type = Lexem::Type::FUNCTION_NAME;
+		return NodeFactory::createNode(name, std::move(params), std::move(returnType), std::move(body));
 	}
 
-	Node* Block() {
-		std::vector<Node*> consts = Consts();
-		std::vector<Node*> decls = Vars();
-		Node* compound = CompoundSt();
+	std::unique_ptr<Node> Block() {
+		std::vector<std::unique_ptr<Node>> consts = std::move(Consts());
+		std::vector<std::unique_ptr<Node>> decls = std::move(Vars());
+		std::unique_ptr<Node> compound = std::move(CompoundSt());
 
-		BlockNode* node = new BlockNode({ "BLOCK" }, consts, decls, compound);
-		return node;
+		return NodeFactory::createNode({ "BLOCK" }, std::move(consts), std::move(decls), std::move(compound));
 	}
 
-	std::vector<Node*> Consts() {
-		std::vector<Node*> cons;
+	std::vector<std::unique_ptr<Node>> Consts() {
+		std::vector<std::unique_ptr<Node>> cons;
 		if (getCurLex().value == "const") {
 			eat("const");
 			while (getCurLex().lex_type == Lexem::Type::IDENTIFIER) {
-				cons.emplace_back(ConstDecl());
+				cons.emplace_back(std::move(ConstDecl()));
 				eat(";");
 			}
 		}
 		return cons;
 	}
 
-	Node* ConstDecl() {
-		Node* name = new Node(getCurLex().value);
+	std::unique_ptr<Node> ConstDecl() {
+		std::unique_ptr<Node> name = NodeFactory::createNode(getCurLex());
 		eat(Lexem::Type::IDENTIFIER);
 		eat("=");
 
 		Lexem val = getCurLex();
-		Node* valPtr = Expression();
+		std::unique_ptr<Node> valPtr = std::move(Expression());
 
-		ConstNode* node = new ConstNode(val, name, valPtr);
-		return node;
+		val.value = "CONSTDECL";
+
+		return NodeFactory::createNode(val, std::move(name), std::move(valPtr));
 	}
 
-	std::vector<Node*> Vars() {
-		std::vector<Node*> vars;
+	std::vector<std::unique_ptr<Node>> Vars() {
+		std::vector<std::unique_ptr<Node>> vars;
 		if (getCurLex().value == "var") {
 			eat("var");
 			while (getCurLex().lex_type == Lexem::Type::IDENTIFIER) {
-				std::vector<VarDeclNode*> varDeclList = VarDecl();
-				for (auto varDeclPTR : varDeclList)
-					varDeclList.emplace_back(varDeclPTR);
+				std::vector<std::unique_ptr<Node>> varDeclList = std::move(VarDecl());
+				for (auto &varDeclPTR : varDeclList)
+					vars.emplace_back(std::move(varDeclPTR));
 				eat(";");
 			}
 		}
 		return vars;
 	}
 
-	std::vector<VarDeclNode*> VarDecl() {
-		std::vector<Node*> varsList;
+	std::vector<std::unique_ptr<Node>> VarDecl() {
+		std::vector<std::unique_ptr<Node>> varsList;
 		Lexem tok = getCurLex();
-		VarNode* var = new VarNode(getCurLex());
-		varsList.emplace_back(var);
+		varsList.emplace_back(NodeFactory::createNode(tok));
 		eat(Lexem::Type::IDENTIFIER);
 
 		while (getCurLex().value == ",") {
 			eat(",");
 			Lexem tok = getCurLex();
-			VarNode* var = new VarNode(getCurLex());
-			varsList.emplace_back(var);
+			varsList.emplace_back(NodeFactory::createNode(tok));
 			eat(Lexem::Type::IDENTIFIER);
 		}
 		eat(":");
 
-		Node* typeNode = TypeSpec();
+		std::unique_ptr<Node> typeNode = std::move(TypeSpec());
 
-		std::vector<VarDeclNode*> varDeclsList;
-		for (auto var : varsList) {
-			VarDeclNode* tmp = new VarDeclNode({ "var_decl" }, var, typeNode);
-			varDeclsList.emplace_back(tmp);
+		std::vector<std::unique_ptr<Node>> varDeclsList;
+		for (auto &var : varsList) {
+			varDeclsList.emplace_back(NodeFactory::createNode({ "VAR_DECL" }, std::move(var), NodeFactory::copyType(typeNode.get())));
 		}
 		return varDeclsList;
 	}
 
-	Node* TypeSpec() {
+	std::unique_ptr<Node> TypeSpec() {
 		Lexem typeTok = getCurLex();
 
 		if (typeTok.value != "array") {
 			eat(Lexem::Type::TYPE_SPEC);
-			Node* node = new Node(typeTok);
-			return node;
+			return NodeFactory::createNode(typeTok);
 		}
 		else {
 			Lexem arrTok = getCurLex();
@@ -309,45 +314,44 @@ public:
 			eat("]");
 			eat("of");
 
-			Node* subType = TypeSpec();
-			ArrSpecNode* node = new ArrSpecNode(arrTok, lHandTok, rHandTok, subType);
-			return node;
+			std::unique_ptr<Node> subType = std::move(TypeSpec());
+			return NodeFactory::createNode(arrTok, lHandTok, rHandTok, std::move(subType));
 		}
 	}
 
-	Node* CompoundSt() {
+	std::unique_ptr<Node> CompoundSt() {
 		Lexem beginTok = getCurLex();
 		eat("begin");
-		std::vector<Node*> stList = StList();
+		std::vector<std::unique_ptr<Node>> stList = std::move(StList());
 		eat("end");
-
-		CompoundNode* node = new CompoundNode(beginTok, stList);
-		return node;
+		
+		beginTok.value = "COMPOUND";
+		return NodeFactory::createNode(beginTok, std::move(stList));
 	}
 
-	std::vector<Node*> StList() {
-		Node* st = St();
-		std::vector<Node*> stList;
-		stList.emplace_back(st);
+	std::vector<std::unique_ptr<Node>> StList() {
+		std::unique_ptr<Node> st = std::move(St());
+		std::vector<std::unique_ptr<Node>> stList;
+		stList.emplace_back(std::move(st));
 
 		while (getCurLex().value == ";") {
 			eat(";");
-			stList.emplace_back(St());
+			stList.emplace_back(std::move(St()));
 		}
 
 		return stList;
 	}
 
-	Node* St() {
+	std::unique_ptr<Node> St() {
 		if (getCurLex().value == "begin") {
-			return CompoundSt();
+			return std::move(CompoundSt());
 		}
 		if (getCurLex().lex_type == Lexem::Type::IDENTIFIER) {
 			if (lookForward().value == ":=" || lookForward().value == "[") {
-				return AssignSt();
+				return std::move(AssignSt());
 			}
 			else if (lookForward().value == "(") {
-				return CallSt();
+				return std::move(CallSt());
 			}
 			else {
 				eat(Lexem::Type::IDENTIFIER);
@@ -355,128 +359,123 @@ public:
 			}
 		}
 		if (getCurLex().value == "while")
-			return WhileSt();
+			return std::move(WhileSt());
 		if (getCurLex().value == "if")
-			return IfSt();
+			return std::move(IfSt());
 		if (getCurLex().value == "for")
-			return ForSt();
+			return std::move(ForSt());
 		if (getCurLex().value == "return")
-			return ReturnSt();
+			return std::move(ReturnSt());
 
-		return EmptySt();
+		return std::move(EmptySt());
 	}
 
-	Node* EmptySt() {
-		Node* node = new Node({ "EMPTY" });
-		return node;
+	std::unique_ptr<Node> EmptySt() {
+		return NodeFactory::createNode({ "EMPTY" });
 	}
 
-	Node* AssignSt() {
-		Node* lValue;
+	std::unique_ptr<Node> AssignSt() {
+		std::unique_ptr<Node> lValue;
 		if (lookForward().value == "[")
-			lValue = SelectSt();
+			lValue = std::move(SelectSt());
 		else
-			lValue = Variable();
+			lValue = std::move(Variable());
 
 		Lexem assignTok = getCurLex();
 		eat(":=");
 
-		Node* toAssign = Expression();
-		AssignNode* node = new AssignNode(assignTok, lValue, toAssign);
-		return node;
+		std::unique_ptr<Node> toAssign = std::move(Expression());
+		return NodeFactory::createNode(assignTok, std::move(lValue), std::move(toAssign));
 	}
 
-	Node* IfSt() {
+	std::unique_ptr<Node> IfSt() {
 		Lexem ifTok = getCurLex();
 		eat("if");
-		Node* condition = Expression();
+		std::unique_ptr<Node> condition = std::move(Expression());
 		eat("then");
 
-		Node* body = St();
-		Node* elseBody = nullptr;
+		std::unique_ptr<Node> body = std::move(St());
+		std::unique_ptr<Node> elseBody = nullptr;
 		if (getCurLex().value == "else") {
 			eat("else");
-			elseBody = St();
+			elseBody = std::move(St());
 		}
-		IfNode* node = new IfNode(ifTok, condition, body, elseBody);
-		return node;
+		return NodeFactory::createNode(ifTok, std::move(condition), std::move(body), std::move(elseBody));
 	}
 
-	Node* WhileSt() {
+	std::unique_ptr<Node> WhileSt() {
 		Lexem whileTok = getCurLex();
 		eat("while");
-		Node* condition = Expression();
+		std::unique_ptr<Node> condition = std::move(Expression());
 		eat("do");
-		Node* body = St();
-		WhileNode* node = new WhileNode(whileTok, condition, body);
-		return node;
+		std::unique_ptr<Node> body = std::move(St());
+		return NodeFactory::createNode(whileTok, std::move(condition), std::move(body));
 	}
 
-	Node* ForSt() {
+	std::unique_ptr<Node> ForSt() {
 		Lexem tok = getCurLex();
 		eat("for");
-		Node* iterSt = IterSt();
+		std::unique_ptr<Node> iterSt = std::move(IterSt());
 		eat("do");
-		Node* body = St();
-		ForNode* node = new ForNode(tok, iterSt, body);
-		return node;
+		std::unique_ptr<Node> body = std::move(St());
+		return NodeFactory::createNode(tok, std::move(iterSt), std::move(body));
 	}
 
-	Node* CallSt() {
+	std::unique_ptr<Node> CallSt() {
 		Lexem tok = getCurLex();
 		eat(Lexem::Type::IDENTIFIER);
 		eat("(");
-		std::vector<Node*> params;
+		std::vector<std::unique_ptr<Node>> params;
 		if (getCurLex().value != ")") {
-			Node* param = Expression();
-			params.emplace_back(param);
+			std::unique_ptr<Node> param = std::move(Expression());
+			params.emplace_back(std::move(param));
 		}
 		while (getCurLex().value == ",") {
 			eat(",");
-			Node* param = Expression();
-			params.emplace_back(param);
+			std::unique_ptr<Node> param = std::move(Expression());
+			params.emplace_back(std::move(param));
 		}
 
 		eat(")");
-		CallFuncNode* node = new CallFuncNode(tok, params);
-		return node;
+		tok.lex_type = Lexem::Type::FUNCTION_NAME;
+		return NodeFactory::createNode(tok, std::move(params));
 	}
 
-	Node* ReturnSt() {
+	std::unique_ptr<Node> ReturnSt() {
 		Lexem tok = getCurLex();
 		eat("return");
-		Node* toReturn = Expression();
-		ReturnNode* node = new ReturnNode(tok, toReturn);
-		return node;
+		std::unique_ptr<Node> toReturn = std::move(Expression());
+		return NodeFactory::createNode(tok, std::move(toReturn));
 	}
 
-	Node* Variable() {
-		VarNode* node = new VarNode(getCurLex());
+	std::unique_ptr<Node> Variable() {
+		std::unique_ptr<Node> node = NodeFactory::createNode(getCurLex());
 		eat(Lexem::Type::IDENTIFIER);
-		return node;
+		return std::move(node);
 	}
 
-	Node* SelectSt() {
+	std::unique_ptr<Node> SelectSt() {
 		Lexem tok = getCurLex();
-		Node* var = Variable();
-		std::vector<Node*> selections;
+		tok.lex_type = Lexem::Type::SELECT;
+		std::unique_ptr<Node> var = std::move(Variable());
+		std::vector<std::unique_ptr<Node>> selections;
 		while (getCurLex().value == "[") {
 			eat("[");
-			Node* index = Expression();
+			std::unique_ptr<Node> index = std::move(Expression());
 			eat("]");
-			selections.emplace_back(index);
+			selections.emplace_back(std::move(index));
 		}
 		if (selections.size() != 1) {
 			for (int i = 0; i < selections.size() - 1; i++) {
-				var = new SelectNode(tok, var, selections[i]);
+				var = NodeFactory::createNode(tok, std::move(var), std::move(selections[i]));
 			}
 		}
-		SelectNode *node = new SelectNode(tok, var, selections[selections.size() - 1]);
-		return node;
+
+		return NodeFactory::createNode(tok, std::move(var), std::move(selections[selections.size() - 1]));
 	}
 
-	Node* Expression() {
-		Node* simpleExpession = SimpleExpression();
+	std::unique_ptr<Node> Expression() {
+		std::unique_ptr<Node> simpleExpession = std::move(SimpleExpression());
 		Lexem token;
 
 		std::string operators[] = { "<", "<=", "<>", "=", ">", ">=" };
@@ -484,15 +483,15 @@ public:
 		if (std::find(std::begin(operators), std::end(operators), getCurLex().value) != std::end(operators)) {
 			token = getCurLex();
 			eat(Lexem::Type::OPERATOR);
-			BinOpNode* node = new BinOpNode(token, simpleExpession, SimpleExpression());
+			return NodeFactory::createNode(token, std::move(simpleExpession), std::move(SimpleExpression()));
 		}
 		else {
-			return simpleExpession;
+			return std::move(simpleExpession);
 		}
 	}
 
-	Node* SimpleExpression() {
-		Node* term = Term();
+	std::unique_ptr<Node> SimpleExpression() {
+		std::unique_ptr<Node> term = std::move(Term());
 
 		std::string operators[] = { "+", "-", "or"};
 
@@ -500,64 +499,65 @@ public:
 			Lexem tok = getCurLex();
 			eat(tok.lex_type);
 
-			term = new BinOpNode(tok, term, Term());
+			term = NodeFactory::createNode(tok, std::move(term), std::move(Term()));
 		}
 
-		return term;
+		return std::move(term);
 	}
 
-	Node* Term() {
-		Node* factor = Factor();
+	std::unique_ptr<Node> Term() {
+		std::unique_ptr<Node> factor = std::move(Factor());
 
 		std::string operators[] = { "/", "*", "and" };
 
 		while (std::find(std::begin(operators), std::end(operators), getCurLex().value) != std::end(operators)) {
 			Lexem tok = getCurLex();
 			eat(tok.value);
-			factor = new BinOpNode(tok, factor, Factor());
+
+			factor = NodeFactory::createNode(tok, std::move(factor), std::move(Factor()));
 		}
 
-		return factor;
+		return std::move(factor);
 	}
 
-	Node* Factor() {
+	std::unique_ptr<Node> Factor() {
 		Lexem tok = getCurLex();
 		if (tok.lex_type == Lexem::Type::INTEGER_CONST || tok.lex_type == Lexem::Type::REAL_CONST || tok.lex_type == Lexem::Type::STRING_CONST) {
 			eat(tok.lex_type);
-			Node* node = new Node(tok);
-			return node;
+			std::unique_ptr<Node> node = NodeFactory::createNode(tok);
+			return std::move(node);
 		}
 		if (tok.value == "(") {
 			eat("(");
-			Node* node = Expression();
+			std::unique_ptr<Node> node = std::move(Expression());
 			eat(")");
-			return node;
+			return std::move(node);
 		}
 		if (tok.value == "+" || tok.value == "-" || tok.value == "not") {
 			eat(tok.value);
-			UnOpNode *node = new UnOpNode(tok, Factor());
-			return node;
+			std::unique_ptr<Node> node = NodeFactory::createNode(tok, std::move(Factor()));
+			return std::move(node);
 		}
 		if (tok.lex_type == Lexem::Type::IDENTIFIER) {
 			if (lookForward().value == "(") {
-				return CallSt();
+				return std::move(CallSt());
 			}
 			else if (lookForward().value == "[") {
-				return SelectSt();
+				return std::move(SelectSt());
 			}
 			else {
-				return Variable();
+				return std::move(Variable());
 			}
 		}
 
 		throw std::runtime_error("Unexpected token! " + tok.value);
-		return nullptr;
+		//return nullptr;
 	}
 
-	Node* IterSt() {
+	std::unique_ptr<Node> IterSt() {
 		Lexem varTok = getCurLex();
 
-		Node* initSt = AssignSt();
+		std::unique_ptr<Node> initSt = std::move(AssignSt());
 
 		Lexem toTok = getCurLex();
 
@@ -574,19 +574,18 @@ public:
 		Factor();
 
 		Lexem condOp = { "<=" };
-		Node* var_cond = new Node(varTok);
-		Node* fin_cond = new Node(finTok);
-		Node* condition = new BinOpNode(condOp, var_cond, fin_cond);
+		std::unique_ptr<Node> var_cond = NodeFactory::createNode(varTok);
+		std::unique_ptr<Node> fin_cond = NodeFactory::createNode(finTok);
+		std::unique_ptr<Node> condition = NodeFactory::createNode(condOp, std::move(var_cond), std::move(fin_cond));
 
 		Lexem postOp = { "+" };
 		if (toTok.value == "downto")
 			postOp = { "-" };
 		Lexem forOp = { "1" };
-		Node* var_postOp = new Node(varTok);
-		Node* fin_postOp = new Node(forOp);
-		Node* postAction = new BinOpNode(postOp, var_postOp, fin_postOp);
+		std::unique_ptr<Node> var_postOp = NodeFactory::createNode(varTok);
+		std::unique_ptr<Node> fin_postOp = NodeFactory::createNode(forOp);
+		std::unique_ptr<Node> postAction = NodeFactory::createNode(postOp, std::move(var_postOp), std::move(fin_postOp));
 
-		IterationNode* node = new IterationNode(toTok, initSt, condition, postAction);
-		return node;
+		return NodeFactory::createNode(toTok, std::move(initSt), std::move(condition), std::move(postAction));
 	}
 };

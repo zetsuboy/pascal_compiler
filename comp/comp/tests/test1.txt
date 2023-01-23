@@ -1,6 +1,15 @@
 program test;
-	var a, b, c : integer;
-	str : string;
+function MyFunc() : integer;
+  	var x: integer;
+	begin
+  		result := x + 10;
+	end;
+const cs = 45.12;
+var 
+	a, b, c : integer;
+	n : array[1..10] of array[1..20] of array[1..30] of integer;
+str : string;
+
 begin
 	a := 15000003;
 	c := a - b + $111;

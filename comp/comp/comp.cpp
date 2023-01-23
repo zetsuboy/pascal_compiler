@@ -219,7 +219,14 @@ int main() {
 	}
 
 	Parser parser(lexes);
-	parser.analyze();
+	std::unique_ptr<Node> root;
+	try {
+		root = parser.analyze();
+	}
+	catch (std::runtime_error e) {
+		std::cout << e.what();
+	}
+	root->print("");
 
 	return 0;
 }

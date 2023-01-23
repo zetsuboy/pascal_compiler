@@ -1,16 +1,9 @@
-uses
-        crt, sysutils, math;
+program test5;
 var
         s, res_system : string;
-        iterator, o_iterator, ss : longint;
-        sum, counter, base : int64;
-        format, overflow : boolean;
-        numbers : string = '0123456789';
-        binary : string = '01';
-        octal : string = '01234567';
-        hexi : string = '0123456789abcdef';
+        iterator, o_iterator, ss : integer;
+        sum, counter, base : integer;
 begin
-        clrscr;
         readln(s);
         s := LowerCase(s);
         format := False;
@@ -18,28 +11,6 @@ begin
         counter := 1;
         if s[iterator - 1] = '-' then
                 iterator := iterator + 1;
-        case s[iterator - 1] of
-                '$':
-                        begin
-                                res_system := hexi;
-                                base := 16;
-                        end;
-                '%':
-                        begin
-                                res_system := binary;
-                                base := 2;
-                        end;
-                '&':
-                        begin
-                                res_system := octal;
-                                base := 8;
-                        end;
-                else begin
-                        res_system := numbers;
-                        Dec(iterator);
-                        base := 10;
-                        end;
-        end;
         if (iterator > Length(s)) then
                 format := True;
         o_iterator := iterator;

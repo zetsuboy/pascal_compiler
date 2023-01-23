@@ -145,7 +145,9 @@
     <ClInclude Include="Lexem.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Node.h" />
+    <ClInclude Include="NodeFactory.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="Symbol.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
